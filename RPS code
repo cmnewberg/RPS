@@ -1,0 +1,217 @@
+// All functions are called from other functions or called recursively, the only initial function called is intro() and everything follows.
+#include <stdio.h>
+#include <stdlib.h> // found from tutorialspoint.com, used to clear screen system("clear");
+#include <string.h>
+#include <ctype.h> // for tolower function
+// Globally accessed variables
+char accepMoves[] = {'r', 'p', 's', 'R', 'P', 'S'};
+char p1[100];
+char p2[100];
+// struct definition
+struct pl{
+    int w;
+    int l;
+} pl1, pl2;
+char m2;
+char m1;
+int rc;
+int *rcp = &rc;
+int rct = 0;
+void intro();
+
+void end() {
+    char playAgain;
+    if (pl1.w > pl2.w) {
+        system("clear");
+        printf("%s has won the game! \nThank you for playing. \nWould you like to play again? (Y/N)", p1);
+        scanf(" %c", &playAgain);
+        switch (playAgain) {
+            case 'Y':
+                intro();
+            case 'N':
+                return 0;
+            default:
+                printf("Unknown entry, exited program");
+                return 0;
+        }
+    } else {
+        system("clear");
+        printf("%s has won the game! \nThank you for playing. \nWould you like to play again? (Y/N)", p2);
+        scanf(" %c", &playAgain);
+        switch (playAgain) {
+            case 'Y':
+                intro();
+            case 'N':
+              return 0;
+            default:
+                printf("Unknown entry, exited program");
+                return 0;
+        }
+    }
+}
+// Determine which player won (or tied) the round
+// uses moves function, m1, m2, p1, p2, struct, *rcp (round count pointer)
+void winner(char m1, char m2) {
+    if (m1 == 'r' || m1 == 'R') {
+        if (m2 == 'r' || m2 == 'R') {
+            rct++;
+            printf("That was a tie, no point awarded. ");
+        } else if (m2 == 'p' || m2 == 'P') {
+            pl2.w++;
+            pl1.l++;
+            printf("\n%s has won! One point to them. ", p2);
+        } else {
+            pl1.w++;
+            pl2.l++;
+            printf("\n%s has won! One point to them. ", p1);
+        }
+    } else if (m1 == 'p' || m1 == 'P') {
+        if (m2 == 'r' || m2 == 'R') {
+            pl1.w++;
+            pl2.l++;
+            printf("\n%s has won! One point to them. ", p1);
+        } else if (m2 == 'p' || m2 == 'P') {
+            rct++;
+            printf("That was a tie, no point awarded. ");
+        } else {
+            pl2.w++;
+            pl1.l++;
+            printf("\n%s has won! One point to them. ", p2);
+        }
+    } else if (m1 == 's' || m1 == 'S') {
+        if (m2 == 'r' || m2 == 'R') {
+            pl2.w++;
+            pl1.l++;
+            printf("\n%s has won! One point to them. ", p2);
+        } else if (m2 == 'p' || m2 == 'P') {
+            pl1.w++;
+            pl2.l++;
+            printf("\n%s has won! One point to them. ", p1);
+        } else if (m2 == 's' || m2 == 'S') {
+            rct++;
+            printf("That was a tie, no point awarded. ");
+        }
+    }
+}
+// p2 move function, requires m1 for the first instance, can be recursive
+// uses m1, m2, p2, accepMoves[]
+void move2() {
+    
+    printf("%s, please enter your move, the options are ('R', 'P', 'S', 'r', 'p' and 's'): ", p2);
+    scanf(" %c", &m2);
+    m2 = tolower(m2); // Convert input to lowercase
+    int in = 0;
+    // Search through accepMoves for valid input
+    for (int i = 0; i < 6; i++) {
+        if (accepMoves[i] == m2) {
+            in = 1;
+            break;
+        }
+    }
+    if (in) {
+        printf("%c ", m2);
+        system("clear");
+        winner(m1, m2);
+    } else {
+        printf("\nPlease enter an acceptable move: ");
+        move2(); // Pass m1 along with recursive call
+    }
+}
+// p1 move function, called from the previous function for the first instance, can be recursive
+// uses m1, p1, accepMoves[]
+void move1() {
+    
+    printf("%s", p1);
+    printf(", please enter your move, the options are ('R', 'P', 'S', 'r', 'p' and 's'): ");
+    scanf(" %c", &m1);
+    m1 = tolower(m1);
+    int in = 0;
+    for (int i = 0; i < 6; i++) {
+        // searches through accepMoves for valid input
+        if (accepMoves[i] == m1) {
+            in = 1;
+            break;
+        }
+    }
+    if (in) {
+        printf(" ");
+        system("clear");
+    } else {
+        printf("Please enter an acceptable move: ");
+        move1();
+    }
+}
+// easy way to call both move1 and move2 for the first instance
+void moves() {
+    move1();
+    move2();
+}
+// choose how many rounds to play with switch statement
+void rounds() {
+    int r;
+    printf("\nPlease select the best-of series you would like to play (1, 3, or 5): ");
+    scanf("%d", &r);
+    if (r == 1 || r == 3 || r == 5) {
+        switch (r) {
+            case 1:
+                while (rc < r) {
+                    moves('r');
+                    if (pl1.w == 1 || pl2.w == 1)
+                        break;
+                }
+                break;
+            case 3:
+                while (rc < r) {
+                    moves('r');
+                    if (pl1.w == 2 || pl2.w == 2)
+                        break;
+                }
+                break;
+            case 5:
+                while (rc < r) {
+                    moves('r');
+                    if (pl1.w == 3 || pl2.w == 3)
+                        break;
+                }
+                break;
+            default:
+                printf("Please enter a valid value ");
+                rounds();
+        }
+    } else {
+        printf("Please enter a valid value ");
+        rounds();
+    }
+    end();
+    pl1.w = 0;
+    pl2.w = 0;
+}
+// enter player names
+void names() {
+    printf("\nPlayer one, please enter your name: ");
+    scanf("%s", p1);
+    printf("\nPlayer two, please enter your name: ");
+    scanf("%s", p2);
+    rounds();
+}
+// Block of text
+void intro() {
+    char null;
+    printf("Welcome to RPSC! This is a 2-player game of Rock, Paper, Scissors written in C. ");
+    printf("\n\n");
+    printf("The rules are simple. First each player will input their names, then input how many rounds (best-of) they would like to play. ");
+    printf("\n\n");
+    printf("Finally, each player will enter their move and the winner is automatically found. Enjoy!");
+    printf("\n\n");
+    printf("Press any key to continue: ");
+    scanf("%c", &null);
+    system("clear");
+    names();
+}
+int main(void) {
+    pl1.w = 0;
+    pl2.w = 0;
+    int rc = pl1.w + pl2.w;
+    intro();
+    return 0;
+}
